@@ -1,10 +1,11 @@
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import { PLATFORMS } from "@/app/data/surveyConfig";
 
 export interface PlatformAnswers {
   usage: string[];
   ucVolumes: string[];
   ucChallenges: string[][];
+  otherTexts: string[];
   automationNeeds: string[][];
   timeSpent: string;
   platformSpend: string;
@@ -21,6 +22,7 @@ export interface ConsolidatedAnswers {
   switchTrigger: string;
   securityNeeds: string[];
   onboardingNeeds: string[];
+  teamWorkflow: string;
   currentlyPays: string;
   paidToolTypes: string[];
   willingnessToPay: string;
@@ -51,6 +53,7 @@ const emptyPA: PlatformAnswers = {
   usage: [],
   ucVolumes: [],
   ucChallenges: [],
+  otherTexts: [],
   automationNeeds: [],
   timeSpent: "",
   platformSpend: "",
@@ -67,6 +70,7 @@ const emptyCA: ConsolidatedAnswers = {
   switchTrigger: "",
   securityNeeds: [],
   onboardingNeeds: [],
+  teamWorkflow: "",
   currentlyPays: "",
   paidToolTypes: [],
   willingnessToPay: "",
@@ -118,12 +122,17 @@ export function useSurvey() {
     if (selectedPlatformCount > 0) {
       p.push("consolidated");
     }
-    p.push("openended", "pricing", "thankyou");
+    p.push("openended", "thankyou");
     return p;
   }, [selectedPlatformCount, selectedPlatforms.map(p => p.key).join(',')]);
 
   const currentPage = pages[pageIndex] || "welcome";
   const totalPages = pages.length;
+
+  // Scroll to top on page change
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [pageIndex]);
 
   // Calculate progress percentage
   const progress = totalPages > 1 ? Math.round((pageIndex / (totalPages - 1)) * 100) : 0;

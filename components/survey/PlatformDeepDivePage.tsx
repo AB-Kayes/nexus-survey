@@ -1,5 +1,6 @@
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
 import OptionChip from './OptionChip';
 import {
   getBranch, USE_CASES, VOLUMES, CHALLENGES,
@@ -29,8 +30,8 @@ function toggleInArray(arr: string[], val: string) {
 export default function PlatformDeepDivePage({ platform, state, updatePlatform, errors, platformIndex, totalPlatforms }: Props) {
   const branch = getBranch(state.occupation);
   const ans = state.platformAnswers[platform.key] || {
-    usage: [], ucVolumes: [], ucChallenges: [], automationNeeds: [],
-    timeSpent: "", platformSpend: "",
+    usage: [], ucVolumes: [], ucChallenges: [], otherTexts: [],
+    automationNeeds: [], timeSpent: "", platformSpend: "",
   };
   const useCases = USE_CASES[branch];
   const ctx = BRANCH_CONTEXT[branch];
@@ -106,6 +107,19 @@ export default function PlatformDeepDivePage({ platform, state, updatePlatform, 
               <div className="flex flex-wrap gap-2">
                 {chal.map(o => <OptionChip key={o} label={o} selected={selectedChals.includes(o)} onClick={() => toggleChal(i, o)} />)}
               </div>
+              {selectedChals.includes('Other') && (
+                <div className="mt-2">
+                  <Input
+                    placeholder="Please specify..."
+                    value={ans.otherTexts[i] || ''}
+                    onChange={e => {
+                      const arr = [...ans.otherTexts];
+                      arr[i] = e.target.value;
+                      updatePlatform(platform.key, { otherTexts: arr });
+                    }}
+                  />
+                </div>
+              )}
               <Err msg={errors[`challenge_${i}`]} />
             </div>
 
@@ -146,7 +160,7 @@ export default function PlatformDeepDivePage({ platform, state, updatePlatform, 
       {/* ── Progress marker ── */}
       {platformIndex < totalPlatforms - 1 ? (
         <div className="text-center py-4">
-          <p className="text-sm text-muted-foreground">✓ {platform.short} complete! Next: {['whatsapp','discord','email','slack','sms','fb_messenger','instagram_dms'].find((p,idx) => idx > platformIndex && state.platformsUsed.includes(['WhatsApp','Discord','Email','Slack','SMS / Text Messaging','Facebook Messenger','Instagram DMs'][['whatsapp','discord','email','slack','sms','fb_messenger','instagram_dms'].indexOf(p)])) || 'next platform'}</p>
+          <p className="text-sm text-muted-foreground">✓ {platform.short} complete! Next: {state.platformsUsed.filter(p => p !== 'None of these')[platformIndex + 1] ?? 'next platform'}</p>
         </div>
       ) : (
         <div className="text-center py-4">

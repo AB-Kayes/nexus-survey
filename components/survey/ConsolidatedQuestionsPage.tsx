@@ -5,7 +5,7 @@ import {
   getBranch,
   AI_NEEDS, AI_CONCERNS, AI_READINESS,
   INTEGRATION_NEEDS, FEATURE_OPTIONS, SWITCH_OPTIONS,
-  SECURITY_NEEDS, ONBOARDING_NEEDS,
+  SECURITY_NEEDS, ONBOARDING_NEEDS, TEAM_WORKFLOW,
   SWITCH_INTENT, SWITCH_TRIGGER,
   PRICING_CONFIG, PAID_TOOL_TYPES, PRICING_MODELS,
   BRANCH_LABELS,
@@ -87,6 +87,20 @@ export default function ConsolidatedQuestionsPage({ state, update, errors }: Pro
           <Err msg={errors.aiConcerns} />
         </div>
       </div>
+
+      {/* ── Section T: Team Workflow ── */}
+      {TEAM_WORKFLOW[branch] && (
+        <div className="border-l-2 border-muted pl-4 space-y-5">
+          <p className="text-xs text-muted-foreground font-medium">Current Workflow</p>
+          <div>
+            <Label>{TEAM_WORKFLOW[branch].q} <span className="text-destructive">*</span></Label>
+            <div className="flex flex-wrap gap-2 mt-2">
+              {TEAM_WORKFLOW[branch].opts.map(o => <OptionChip key={o} label={o} selected={ca.teamWorkflow === o} onClick={() => update({ teamWorkflow: o })} />)}
+            </div>
+            <Err msg={errors.teamWorkflow} />
+          </div>
+        </div>
+      )}
 
       {/* ── Section H: Integration Needs ── */}
       {integrationOpts.length > 0 && (

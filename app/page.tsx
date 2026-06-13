@@ -65,6 +65,7 @@ function validate(
       e.switchTrigger = "Required";
     if (!ca.securityNeeds || ca.securityNeeds.length === 0) e.securityNeeds = "Select at least one";
     if (!ca.onboardingNeeds || ca.onboardingNeeds.length === 0) e.onboardingNeeds = "Select at least one";
+    if (!ca.teamWorkflow) e.teamWorkflow = "Required";
     if (!ca.currentlyPays) e.currentlyPays = "Required";
     if (ca.currentlyPays === "Yes" && ca.paidToolTypes.length === 0) e.paidToolTypes = "Select at least one";
     if (!ca.willingnessToPay) e.willingnessToPay = "Required";
