@@ -167,7 +167,7 @@ export default function SurveyPage() {
   // Submitted state
   if (submitted) {
     return (
-      <SurveyLayout progress={100} pageIndex={totalPages - 1} totalPages={totalPages} onBack={() => {}} onNext={() => {}} showBack={false}>
+      <SurveyLayout progress={100} pageIndex={totalPages - 1} totalPages={totalPages} onBack={() => {}} onNext={() => {}} showBack={false} showNav={false}>
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center">
             <CheckCircle2 className="w-16 h-16 text-green-500 mx-auto mb-4" />
@@ -185,6 +185,11 @@ export default function SurveyPage() {
   // Welcome page: no progress bar, no nav buttons
   if (currentPage === "welcome") {
     return <WelcomePage onStart={handleNext} estimatedMinutes={estimatedMinutes} platformCount={selectedPlatformCount} />;
+  }
+
+  // Thank You page: no progress bar, no nav buttons
+  if (currentPage === "thankyou") {
+    return <ThankYouPage state={state} update={update} errors={errors} onNext={handleNext} />;
   }
 
   // All other pages: wrapped in SurveyLayout
@@ -209,7 +214,6 @@ export default function SurveyPage() {
       })()}
       {currentPage === "consolidated" && <ConsolidatedQuestionsPage state={state} update={updateConsolidated} errors={errors} />}
       {currentPage === "openended" && <OpenEndedPage state={state} update={update} errors={errors} />}
-      {currentPage === "thankyou" && <ThankYouPage state={state} update={update} errors={errors} />}
     </SurveyLayout>
   );
 }

@@ -1,5 +1,6 @@
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
 import OptionChip from './OptionChip';
 import {
   getBranch,
@@ -27,6 +28,18 @@ function toggleInArray(arr: string[], val: string) {
   return arr.includes(val) ? arr.filter(v => v !== val) : [...arr, val];
 }
 
+function OtherInput({ value, onChange, placeholder }: { value: string; onChange: (v: string) => void; placeholder?: string }) {
+  return (
+    <div className="mt-2">
+      <Input
+        placeholder={placeholder || 'Please specify...'}
+        value={value}
+        onChange={e => onChange(e.target.value)}
+      />
+    </div>
+  );
+}
+
 export default function ConsolidatedQuestionsPage({ state, update, errors }: Props) {
   const branch = getBranch(state.occupation);
   const ca = state.consolidatedAnswers || {
@@ -34,8 +47,8 @@ export default function ConsolidatedQuestionsPage({ state, update, errors }: Pro
     integrationNeeds: [], features: [], switchAnswers: [],
     switchIntent: "", switchTrigger: "",
     securityNeeds: [], onboardingNeeds: [],
-    currentlyPays: "", paidToolTypes: [],
-    willingnessToPay: "", pricingModel: "",
+    teamWorkflow: "", currentlyPays: "", paidToolTypes: [],
+    willingnessToPay: "", pricingModel: "", otherTexts: {},
   };
 
   const aiNeedOpts = AI_NEEDS['whatsapp']?.[branch] ?? [];
@@ -47,8 +60,13 @@ export default function ConsolidatedQuestionsPage({ state, update, errors }: Pro
   const switchIntentOpts = SWITCH_INTENT[branch];
   const switchTriggerOpts = SWITCH_TRIGGER[branch];
   const pricingConfig = PRICING_CONFIG[branch];
+  const workflowOpts = TEAM_WORKFLOW[branch];
 
   const isSwitchLikely = ca.switchIntent === "Very likely" || ca.switchIntent === "Somewhat likely";
+
+  const setOther = (key: string, value: string) => {
+    update({ otherTexts: { ...ca.otherTexts, [key]: value } });
+  };
 
   return (
     <div className="space-y-8">
@@ -73,8 +91,9 @@ export default function ConsolidatedQuestionsPage({ state, update, errors }: Pro
             <Label>Which AI features would be most valuable for your messaging workflow? <span className="text-destructive">*</span></Label>
             <p className="text-xs text-muted-foreground mt-1 mb-2">Select all that apply</p>
             <div className="flex flex-wrap gap-2">
-              {aiNeedOpts.map(o => <OptionChip key={o} label={o} selected={ca.aiNeeds.includes(o)} onClick={() => update({ aiNeeds: toggleInArray(ca.aiNeeds, o) })} />)}
+              {(aiNeedOpts.includes('Other') ? aiNeedOpts : [...aiNeedOpts, 'Other']).map(o => <OptionChip key={o} label={o} selected={ca.aiNeeds.includes(o)} onClick={() => update({ aiNeeds: toggleInArray(ca.aiNeeds, o) })} />)}
             </div>
+            {ca.aiNeeds.includes('Other') && <OtherInput value={ca.otherTexts['aiNeeds'] || ''} onChange={v => setOther('aiNeeds', v)} />}
             <Err msg={errors.aiNeeds} />
           </div>
         )}
@@ -82,21 +101,23 @@ export default function ConsolidatedQuestionsPage({ state, update, errors }: Pro
           <Label>What concerns do you have about using AI for business messaging? <span className="text-destructive">*</span></Label>
           <p className="text-xs text-muted-foreground mt-1 mb-2">Select all that apply</p>
           <div className="flex flex-wrap gap-2">
-            {AI_CONCERNS.map(o => <OptionChip key={o} label={o} selected={ca.aiConcerns.includes(o)} onClick={() => update({ aiConcerns: toggleInArray(ca.aiConcerns, o) })} />)}
+            {(AI_CONCERNS.includes('Other') ? AI_CONCERNS : [...AI_CONCERNS, 'Other']).map(o => <OptionChip key={o} label={o} selected={ca.aiConcerns.includes(o)} onClick={() => update({ aiConcerns: toggleInArray(ca.aiConcerns, o) })} />)}
           </div>
+          {ca.aiConcerns.includes('Other') && <OtherInput value={ca.otherTexts['aiConcerns'] || ''} onChange={v => setOther('aiConcerns', v)} />}
           <Err msg={errors.aiConcerns} />
         </div>
       </div>
 
       {/* ── Section T: Team Workflow ── */}
-      {TEAM_WORKFLOW[branch] && (
+      {workflowOpts && (
         <div className="border-l-2 border-muted pl-4 space-y-5">
           <p className="text-xs text-muted-foreground font-medium">Current Workflow</p>
           <div>
-            <Label>{TEAM_WORKFLOW[branch].q} <span className="text-destructive">*</span></Label>
+            <Label>{workflowOpts.q} <span className="text-destructive">*</span></Label>
             <div className="flex flex-wrap gap-2 mt-2">
-              {TEAM_WORKFLOW[branch].opts.map(o => <OptionChip key={o} label={o} selected={ca.teamWorkflow === o} onClick={() => update({ teamWorkflow: o })} />)}
+              {(workflowOpts.opts.includes('Other') ? workflowOpts.opts : [...workflowOpts.opts, 'Other']).map(o => <OptionChip key={o} label={o} selected={ca.teamWorkflow === o} onClick={() => update({ teamWorkflow: o })} />)}
             </div>
+            {ca.teamWorkflow === 'Other' && <OtherInput value={ca.otherTexts['teamWorkflow'] || ''} onChange={v => setOther('teamWorkflow', v)} />}
             <Err msg={errors.teamWorkflow} />
           </div>
         </div>
@@ -110,8 +131,9 @@ export default function ConsolidatedQuestionsPage({ state, update, errors }: Pro
             <Label>What integrations are most important for your overall messaging workflow? <span className="text-destructive">*</span></Label>
             <p className="text-xs text-muted-foreground mt-1 mb-2">Select all that apply</p>
             <div className="flex flex-wrap gap-2">
-              {integrationOpts.map(o => <OptionChip key={o} label={o} selected={ca.integrationNeeds.includes(o)} onClick={() => update({ integrationNeeds: toggleInArray(ca.integrationNeeds, o) })} />)}
+              {(integrationOpts.includes('Other') ? integrationOpts : [...integrationOpts, 'Other']).map(o => <OptionChip key={o} label={o} selected={ca.integrationNeeds.includes(o)} onClick={() => update({ integrationNeeds: toggleInArray(ca.integrationNeeds, o) })} />)}
             </div>
+            {ca.integrationNeeds.includes('Other') && <OtherInput value={ca.otherTexts['integrationNeeds'] || ''} onChange={v => setOther('integrationNeeds', v)} />}
             <Err msg={errors.integrationNeeds} />
           </div>
         </div>
@@ -124,7 +146,7 @@ export default function ConsolidatedQuestionsPage({ state, update, errors }: Pro
           <Label>Which features would save you the most time across all platforms? <span className="text-destructive">*</span></Label>
           <p className="text-xs text-muted-foreground mt-1 mb-2">Select up to 3 features</p>
           <div className="flex flex-wrap gap-2">
-            {featureOpts.map(o => (
+            {(featureOpts.includes('Other') ? featureOpts : [...featureOpts, 'Other']).map(o => (
               <OptionChip key={o} label={o} selected={ca.features.includes(o)} onClick={() => {
                 if (ca.features.includes(o)) {
                   update({ features: ca.features.filter(f => f !== o) });
@@ -135,14 +157,16 @@ export default function ConsolidatedQuestionsPage({ state, update, errors }: Pro
             ))}
           </div>
           {ca.features.length === 3 && <p className="text-xs text-muted-foreground mt-1">Maximum of 3 selected</p>}
+          {ca.features.includes('Other') && <OtherInput value={ca.otherTexts['features'] || ''} onChange={v => setOther('features', v)} />}
           <Err msg={errors.features} />
         </div>
         <div>
           <Label>What would make you switch to a new messaging platform? <span className="text-destructive">*</span></Label>
           <p className="text-xs text-muted-foreground mt-1 mb-2">Select all that apply</p>
           <div className="flex flex-wrap gap-2">
-            {switchOpts.map(o => <OptionChip key={o} label={o} selected={ca.switchAnswers.includes(o)} onClick={() => update({ switchAnswers: toggleInArray(ca.switchAnswers, o) })} />)}
+            {(switchOpts.includes('Other') ? switchOpts : [...switchOpts, 'Other']).map(o => <OptionChip key={o} label={o} selected={ca.switchAnswers.includes(o)} onClick={() => update({ switchAnswers: toggleInArray(ca.switchAnswers, o) })} />)}
           </div>
+          {ca.switchAnswers.includes('Other') && <OtherInput value={ca.otherTexts['switchAnswers'] || ''} onChange={v => setOther('switchAnswers', v)} />}
           <Err msg={errors.switchAnswers} />
         </div>
       </div>
@@ -150,13 +174,14 @@ export default function ConsolidatedQuestionsPage({ state, update, errors }: Pro
       {/* ── Section K: Security & Compliance ── */}
       {securityOpts && (
         <div className="border-l-2 border-muted pl-4 space-y-5">
-          <p className="text-xs text-muted-foreground font-medium">Security & Compliance</p>
+          <p className="text-xs text-muted-foreground font-medium">Data Protection & Trust</p>
           <div>
             <Label>{securityOpts.q} <span className="text-destructive">*</span></Label>
             <p className="text-xs text-muted-foreground mt-1 mb-2">Select all that apply</p>
             <div className="flex flex-wrap gap-2">
-              {securityOpts.opts.map(o => <OptionChip key={o} label={o} selected={ca.securityNeeds.includes(o)} onClick={() => update({ securityNeeds: toggleInArray(ca.securityNeeds, o) })} />)}
+              {(securityOpts.opts.includes('Other') ? securityOpts.opts : [...securityOpts.opts, 'Other']).map(o => <OptionChip key={o} label={o} selected={ca.securityNeeds.includes(o)} onClick={() => update({ securityNeeds: toggleInArray(ca.securityNeeds, o) })} />)}
             </div>
+            {ca.securityNeeds.includes('Other') && <OtherInput value={ca.otherTexts['securityNeeds'] || ''} onChange={v => setOther('securityNeeds', v)} />}
             <Err msg={errors.securityNeeds} />
           </div>
         </div>
@@ -165,12 +190,12 @@ export default function ConsolidatedQuestionsPage({ state, update, errors }: Pro
       {/* ── Section L: Onboarding & Setup ── */}
       {onboardingOpts && (
         <div className="border-l-2 border-muted pl-4 space-y-5">
-          <p className="text-xs text-muted-foreground font-medium">Onboarding & Setup</p>
+          <p className="text-xs text-muted-foreground font-medium">Getting Started</p>
           <div>
             <Label>{onboardingOpts.q} <span className="text-destructive">*</span></Label>
             <p className="text-xs text-muted-foreground mt-1 mb-2">Select up to 3 most important</p>
             <div className="flex flex-wrap gap-2">
-              {onboardingOpts.opts.map(o => (
+              {(onboardingOpts.opts.includes('Other') ? onboardingOpts.opts : [...onboardingOpts.opts, 'Other']).map(o => (
                 <OptionChip key={o} label={o} selected={ca.onboardingNeeds.includes(o)} onClick={() => {
                   if (ca.onboardingNeeds.includes(o)) {
                     update({ onboardingNeeds: ca.onboardingNeeds.filter(x => x !== o) });
@@ -181,6 +206,7 @@ export default function ConsolidatedQuestionsPage({ state, update, errors }: Pro
               ))}
             </div>
             {ca.onboardingNeeds.length === 3 && <p className="text-xs text-muted-foreground mt-1">Maximum of 3 selected</p>}
+            {ca.onboardingNeeds.includes('Other') && <OtherInput value={ca.otherTexts['onboardingNeeds'] || ''} onChange={v => setOther('onboardingNeeds', v)} />}
             <Err msg={errors.onboardingNeeds} />
           </div>
         </div>
@@ -222,8 +248,9 @@ export default function ConsolidatedQuestionsPage({ state, update, errors }: Pro
             <Label>Which type of tools do you currently pay for? <span className="text-destructive">*</span></Label>
             <p className="text-xs text-muted-foreground mt-1 mb-2">Select all that apply.</p>
             <div className="flex flex-wrap gap-2">
-              {PAID_TOOL_TYPES.map(t => <OptionChip key={t} label={t} selected={ca.paidToolTypes.includes(t)} onClick={() => update({ paidToolTypes: toggleInArray(ca.paidToolTypes, t) })} />)}
+              {(PAID_TOOL_TYPES.includes('Other') ? PAID_TOOL_TYPES : [...PAID_TOOL_TYPES, 'Other']).map(t => <OptionChip key={t} label={t} selected={ca.paidToolTypes.includes(t)} onClick={() => update({ paidToolTypes: toggleInArray(ca.paidToolTypes, t) })} />)}
             </div>
+            {ca.paidToolTypes.includes('Other') && <OtherInput value={ca.otherTexts['paidToolTypes'] || ''} onChange={v => setOther('paidToolTypes', v)} />}
             <Err msg={errors.paidToolTypes} />
           </div>
         )}
@@ -233,13 +260,15 @@ export default function ConsolidatedQuestionsPage({ state, update, errors }: Pro
           <div className="flex flex-wrap gap-2">
             {pricingConfig.opts.map(o => <OptionChip key={o} label={o} selected={ca.willingnessToPay === o} onClick={() => update({ willingnessToPay: o })} />)}
           </div>
+          {ca.willingnessToPay === 'Other' && <OtherInput value={ca.otherTexts['willingnessToPay'] || ''} onChange={v => setOther('willingnessToPay', v)} />}
           <Err msg={errors.willingnessToPay} />
         </div>
         <div>
           <Label>Which pricing model do you prefer? <span className="text-destructive">*</span></Label>
           <div className="flex flex-wrap gap-2 mt-2">
-            {PRICING_MODELS.map(m => <OptionChip key={m} label={m} selected={ca.pricingModel === m} onClick={() => update({ pricingModel: m })} />)}
+            {(PRICING_MODELS.includes('Other') ? PRICING_MODELS : [...PRICING_MODELS, 'Other']).map(m => <OptionChip key={m} label={m} selected={ca.pricingModel === m} onClick={() => update({ pricingModel: m })} />)}
           </div>
+          {ca.pricingModel === 'Other' && <OtherInput value={ca.otherTexts['pricingModel'] || ''} onChange={v => setOther('pricingModel', v)} />}
           <Err msg={errors.pricingModel} />
         </div>
       </div>

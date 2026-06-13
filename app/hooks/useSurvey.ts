@@ -27,6 +27,7 @@ export interface ConsolidatedAnswers {
   paidToolTypes: string[];
   willingnessToPay: string;
   pricingModel: string;
+  otherTexts: Record<string, string>;
 }
 
 export interface SurveyState {
@@ -71,6 +72,7 @@ const emptyCA: ConsolidatedAnswers = {
   securityNeeds: [],
   onboardingNeeds: [],
   teamWorkflow: "",
+  otherTexts: {},
   currentlyPays: "",
   paidToolTypes: [],
   willingnessToPay: "",

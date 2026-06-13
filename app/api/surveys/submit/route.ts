@@ -28,6 +28,7 @@ const consolidatedAnswerSchema = z.object({
   paidToolTypes: z.array(z.string()).optional(),
   willingnessToPay: z.string().optional(),
   pricingModel: z.string().optional(),
+  otherTexts: z.record(z.string(), z.string()).optional(),
 });
 
 const submitSchema = z.object({
@@ -84,8 +85,11 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (error) {
-      console.error("Supabase error:", error);
-      return NextResponse.json({ error: "Failed to submit survey" }, { status: 500 });
+      console.error("Supabase error:", JSON.stringify(error, null, 2));
+      return NextResponse.json(
+        { error: "Failed to submit survey", details: error.message, code: error.code },
+        { status: 500 }
+      );
     }
 
     return NextResponse.json({ success: true, id: data.id });
@@ -94,6 +98,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid input", details: error.errors }, { status: 400 });
     }
     console.error("Submit error:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    const message = error instanceof Error ? error.message : "Unknown error";
+    return NextResponse.json({ error: "Internal server error", details: message }, { status: 500 });
   }
 }
